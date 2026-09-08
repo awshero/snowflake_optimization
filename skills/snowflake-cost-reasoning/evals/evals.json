@@ -1,0 +1,33 @@
+{
+  "skill_name": "snowflake-cost-reasoning",
+  "evals": [
+    {
+      "id": 0,
+      "name": "trap-detection-blanket-cuts",
+      "prompt": "ok so we've been told to get snowflake spend down 20% by end of quarter. my plan: (1) downsize our top 5 warehouses by one size each - they're all XL or bigger and honestly nothing seems to need that much, (2) set auto_suspend to 30 seconds across the whole account, right now most are on the 600 default, (3) flip every warehouse to ECONOMY scaling policy. our biggest one is ANALYTICS_WH (2XL, serves tableau + our dbt runs + the data science team's notebooks). i can get this all done in an afternoon. anything i'm missing before i ship it?",
+      "expected_output": "Should catch multiple second-order traps: downsizing without first checking remote spill; 30s auto-suspend causing resume churn against the 60s minimum plus cache loss; ECONOMY on a warehouse serving Tableau (interactive, humans wait). Should also flag ANALYTICS_WH as mixed-tenancy. Should not simply refuse the plan - should say what evidence to gather and what the corrected plan is.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "recurring-spike-diagnosis",
+      "prompt": "our snowflake bill spikes every quarter end - like 40% above a normal month. we've 'fixed' this twice now. first time we resized the finance warehouse down after close, second time we added a resource monitor on it. it came back again this quarter. finance is asking me why this keeps happening and honestly i don't have a good answer. how do i actually get to the bottom of this?",
+      "expected_output": "Should recognize this as an iceberg problem where previous fixes were at event level. Should work down: event (this quarter's spike) -> pattern (every quarter-end, and the fixes don't hold) -> structure (what config/schedule/ownership produces it) -> mental model (why nobody changes it). The 'fixed it twice' signal should be read as evidence the cause is structural or deeper. Should give concrete queries/probes, not just philosophy.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "small-question-effort-scaling",
+      "prompt": "quick one - should i turn on search optimization for our EVENTS table? it's about 8TB and people query it with things like where event_id = 'abc-123'. we're on enterprise edition, warehouses are gen2.",
+      "expected_output": "Should be SHORT - a few paragraphs, no framework headers, no 2000-word analysis. Must surface: the 2x serverless multiplier; that this IS the right access pattern for SOS (selective point lookup, not a range scan); and critically that on Gen2 warehouses Snowflake Optima Indexing may already cover recurring point lookups at zero cost, so check that first. Should mention column-scope rather than whole-table.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "credits-versus-dollars",
+      "prompt": "good news - we got our snowflake credit consumption down 22% over the last quarter, mostly from warehouse right-sizing and killing idle time. i'm presenting to the CFO on thursday. we spend about 40M a year so i want to tell her we saved roughly 8.8M annualized. does that math hold up?",
+      "expected_output": "Must catch that credits avoided != dollars realized. Should ask about / flag the capacity commitment: under a commit, reduced consumption burns the commit down slower and produces no refund. Should recommend presenting two separate numbers (credits avoided vs dollars realized) and identify the realization mechanism (renegotiate at renewal / reduce growth against rising baseline / reallocate freed capacity). Should not just validate the 8.8M figure.",
+      "files": []
+    }
+  ]
+}
